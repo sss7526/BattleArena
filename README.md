@@ -1,6 +1,6 @@
 # Battle Arena
 ---
-Text based Java game\n
+Text based Java game
 
 Comple:
 ```
