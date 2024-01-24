@@ -10,15 +10,15 @@ public class Game {
         int init;
     
     public Character(String name) {
-        health = getRandom(100, 1);
-        defense = getRandom(100, 1);
-        strength = getRandom(100, 1);
+        health = getRandom(100, 50);
+        defense = getRandom(100, 50);
+        strength = getRandom(100, 50);
         cname = name;
         init = 0;
     }
 }
     static int getRandom(int max, int min) {
-        int num = 1 + (int)(Math.random() * ((max - min) + 1));
+        int num = min + (int)(Math.random() * ((max - min) + 1));
         return num;
     }
 
@@ -71,11 +71,12 @@ public class Game {
        if (d.defense > a.strength) {
         apts = 1;
         d.defense = d.defense - ((d.defense % a.strength) + 1);
-        System.out.println("\n" + dname + " blocked " + aname + "\'s attack and took no damage!\n(Croud chears)\n");
+        System.out.println("\n" + dname + " blocked " + aname + "\'s attack and only got a scratch!\n(Croud chears)\n");
        } else {
         apts = a.strength - d.defense;
         d.health = d.health - apts;
-        System.out.println("\n" + aname + " strikes " + dname + " for " + apts + " points of damage!\n(Croud boos)\n");
+        d.defense = d.defense - ((d.defense % apts) + 1);
+        System.out.println("\n" + aname + " strikes " + dname + " for " + apts + " points of damage!\n(Croud gasps!)\n");
        }
        if (d.health < 1) {
         d.health = 0;
