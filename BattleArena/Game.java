@@ -81,6 +81,9 @@ public class Game {
        if (d.health < 1) {
         d.health = 0;
        }
+       if (d.defense < 1) {
+        d.defense = 0;
+       }
     }
 
     static void doBattle(Character h, Character e) {
