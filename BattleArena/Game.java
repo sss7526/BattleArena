@@ -69,8 +69,8 @@ public class Game {
        String dname = d.cname;
 
        if (d.defense > a.strength) {
-        apts = 0;
-        d.defense = d.defense - (d.defense % a.strength);
+        apts = 1;
+        d.defense = d.defense - ((d.defense % a.strength) + 1);
         System.out.println("\n" + dname + " blocked " + aname + "\'s attack and took no damage!\n(Croud chears)\n");
        } else {
         apts = a.strength - d.defense;
@@ -114,15 +114,18 @@ public class Game {
             printStats(hero);
             printStats(enemy);
             int option = getOption();
+            cls();
             if (option == 1) {
                 doBattle(hero, enemy);
             } else if (option == 2) {
-                System.out.println("byb");
+                System.out.println("YOU COWARD!");
                 System.exit(0);
             } else {
                 System.out.println("Invalid Option");
             }
        }
+       printStats(hero);
+       printStats(enemy);
        if (hero.health < 1) {
         System.out.println(enemy.cname + " defeated " + hero.cname + "!\n(Cround boos aggressively)\nSomeone from the croud yelled \"YOU SUCK!\"\n");
        } else {
