@@ -59,7 +59,7 @@ public class Game {
             return e;
         } else {
             clash(h, e);
-            return e;
+            return h;
         }
     }
 
