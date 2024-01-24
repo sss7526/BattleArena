@@ -10,15 +10,15 @@ public class Game {
         int init;
     
     public Character(String name) {
-        health = getRandom();
-        defense = getRandom();
-        strength = getRandom();
+        health = getRandom(100, 1);
+        defense = getRandom(100, 1);
+        strength = getRandom(100, 1);
         cname = name;
         init = 0;
     }
 }
-    static int getRandom() {
-        int num = 1 + (int)(Math.random() * ((100 - 1) + 1));
+    static int getRandom(int max, int min) {
+        int num = 1 + (int)(Math.random() * ((max - min) + 1));
         return num;
     }
 
@@ -51,8 +51,8 @@ public class Game {
     }
 
     static Character roll(Character h, Character e) {
-        h.init = getRandom();
-        e.init = getRandom();
+        h.init = getRandom(6, 1);
+        e.init = getRandom(6, 1);
         if (h.init > e.init) {
             return h;
         } else if (h.init < e.init) {
@@ -62,8 +62,27 @@ public class Game {
             return e;
         }
     }
+
+    static void attack(Character a, Character d) {
+       int apts;
+       String aname = a.cname;
+       String dname = d.cname;
+
+       if (d.defense > a.strength) {
+        apts = 0;
+        d.defense = d.defense - (d.defense % a.strength);
+        System.out.println("\n" + dname + " blocked " + aname + "\'s attack and took no damage!\n(Croud chears)\n");
+       } else {
+        apts = a.strength - d.defense;
+        d.health = d.health - apts;
+        System.out.println("\n" + aname + " strikes " + dname + " for " + apts + " points of damage!\n(Croud boos)\n");
+       }
+       if (d.health < 1) {
+        d.health = 0;
+       }
+    }
+
     static void doBattle(Character h, Character e) {
-        System.out.println("test");
         Character goesFirst = roll(h, e);
         System.out.println(goesFirst.cname + " takes initiative!\n");
         Character defender;
@@ -72,7 +91,8 @@ public class Game {
         } else {
             defender = h;
         }
-        System.out.println(defender.cname);
+        attack(goesFirst, defender);
+       // System.out.println(defender.cname);
     }
 
     static int getOption() {
@@ -87,10 +107,12 @@ public class Game {
         Game.Character hero = myGame.new Character(printWelcome());
         Game.Character enemy = myGame.new Character("Spock");
         System.out.println("\nAvast, " + hero.cname + "! Go forth!");
-       // System.out.println("Health: \t" + hero.health + "\nDefense: \t" + hero.defense + "\nStrength: \t" + hero.strength);
-       printStats(hero);
-       printStats(enemy);
-       while (hero.health > 0 && enemy.health != 0) {
+
+      // printStats(hero);
+      // printStats(enemy);
+       while (hero.health > 0 && enemy.health > 0) {
+            printStats(hero);
+            printStats(enemy);
             int option = getOption();
             if (option == 1) {
                 doBattle(hero, enemy);
@@ -100,6 +122,11 @@ public class Game {
             } else {
                 System.out.println("Invalid Option");
             }
+       }
+       if (hero.health < 1) {
+        System.out.println(enemy.cname + " defeated " + hero.cname + "!\n(Cround boos aggressively)\nSomeone from the croud yelled \"YOU SUCK!\"\n");
+       } else {
+        System.out.println(hero.cname + " utterly smote " + enemy.cname + "!\n(Croud ROARS)\n");
        }
     }
 }
