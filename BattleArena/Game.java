@@ -1,6 +1,6 @@
 import java.util.Scanner;
 import java.io.*;
-
+//new comment
 public class Game {
     public class Character {
         int health;
