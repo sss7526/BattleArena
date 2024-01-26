@@ -1,139 +1,186 @@
+import java.util.Optional;
+import java.util.Random;
 import java.util.Scanner;
-import java.io.*;
 
 public class Game {
-    public class Character {
-        int health;
-        int defense;
-        int strength;
-        String cname;
-        int init;
+    public record Hit(
+        boolean blocked,
+        int attack_points
+    ) {
+        @Override
+        public String toString() {
+            if (attack_points == 0) {
+                return "no damage";
+            } else if (attack_points == 1) {
+                return "1 point of damage";
+            } else {
+                return "%d points of damage".formatted(attack_points);
+            }
+        }
+    }
+
+    public static class Character {
+        private int health;
+        private int defense;
+        private int strength;
+        public final String name;
+
+        public Character(String name, Random rand) {
+            health = rand.nextInt(50, 101);
+            defense = rand.nextInt(50, 101);
+            strength = rand.nextInt(50, 101);
+            this.name = name;
+        }
+
+        public boolean isAlive() {
+            return health > 0;
+        }
+
+        public Hit receiveHit(Character attacker) {
+            int attack_points = Integer.max(0, attacker.strength - defense);
+            boolean blocked = attack_points == 0;
+            int modifier;
+
+            if (blocked) {
+                modifier = (defense % attacker.strength) + 1;
+                defense -= modifier;
+                attacker.strength -= modifier / 2;
+            } else {
+                modifier = (defense % attack_points) + 1;
+                defense -= modifier;
+                attacker.strength -= modifier / 2;
+            }
+            health = Integer.max(0, health - attack_points);
+            return new Hit(blocked, attack_points);
+        }
+
+        public static void printStats(Character... chars) {
+            System.out.print(" ".repeat(9));
+            for (Character col: chars)
+                System.out.printf("%8s ", col);
+            System.out.println();
     
-    public Character(String name) {
-        health = getRandom(100, 50);
-        defense = getRandom(100, 50);
-        strength = getRandom(100, 50);
-        cname = name;
-        init = 0;
-    }
-}
-    static int getRandom(int max, int min) {
-        int num = min + (int)(Math.random() * ((max - min) + 1));
-        return num;
+            System.out.print("-".repeat(8));
+            for (Character col: chars)
+                System.out.print("-".repeat(9));
+            System.out.println();
+    
+            System.out.printf("%8s ", "Health");
+            for (Character col: chars)
+                System.out.printf("%8d ", col.health);
+            System.out.println();
+    
+            System.out.printf("%8s ", "Defense");
+            for (Character col: chars)
+                System.out.printf("%8d ", col.defense);
+            System.out.println();
+    
+            System.out.printf("%8s ", "Strength");
+            for (Character col: chars)
+                System.out.printf("%8d ", col.strength);
+            System.out.printf("%n%n");
+        }
+
+        @Override
+        public String toString() {
+            return name;
+        }
     }
 
-    static void cls() {
-        System.out.print("\033[H\033[2J");
-        System.out.flush();
-    }
-    static String printWelcome() {
-        cls();
+    private final Random rand = new Random();
+    private final Scanner scanner = new Scanner(System.in);
+    private final Character hero;
+    private final Character enemy = new Character("Spock", rand);
+
+    public Game() {
         System.out.println("Welcome to the arena!");
-        Scanner scanObj = new Scanner(System.in);
-        System.out.println("Enter your hero\'s name:");
-        String heroName = scanObj.nextLine();
-        cls();
-        return heroName;
+        System.out.print("Enter your hero's name: ");
+        hero = new Character(scanner.nextLine(), rand);
+        System.out.printf("%nAvast, %s! Go forth!%n", hero);
     }
 
-    static void printStats(Character c) {
-        Console cnsl = System.console();
-        String fmt = "%1$-10s %2$-1s%n";
-        System.out.println("\n" + c.cname + "\'s Stats:\n---------------");
-        cnsl.format(fmt, "Health:", c.health);
-        cnsl.format(fmt, "Defense:", c.defense);
-        cnsl.format(fmt, "Strength:", c.strength);
+    public void clash() {
+        System.out.printf("%n%s takes a cheap shot!%n", enemy);
+        System.out.println("(Crowd gasps)");
+        System.out.printf("%nBut %s blocks it in the nick of time!%n", hero);
+        System.out.println("(Crowd cheers)");
     }
 
-    static void clash(Character h, Character e) {
-        System.out.println("\n" + e.cname + " took a cheapshot!\n(Croud gasps)\nBut " + h.cname + " blocked it in the nick of time!\n(Croud Chears)\n");
-        doBattle(h, e);
-    }
-
-    static Character roll(Character h, Character e) {
-        h.init = getRandom(6, 1);
-        e.init = getRandom(6, 1);
-        if (h.init > e.init) {
-            return h;
-        } else if (h.init < e.init) {
-            return e;
+    public Optional<Character> rollInitiative() {
+        int hero_initiative = rand.nextInt(1, 7),
+            enemy_initiative = rand.nextInt(1, 7);
+        if (hero_initiative > enemy_initiative) {
+            return Optional.of(hero);
+        } else if (hero_initiative < enemy_initiative) {
+            return Optional.of(enemy);
         } else {
-            clash(h, e);
-            return h;
+            return Optional.empty();
         }
     }
 
-    static void attack(Character a, Character d) {
-       int apts;
-       String aname = a.cname;
-       String dname = d.cname;
-
-       if (d.defense > a.strength) {
-        apts = 1;
-        d.defense = d.defense - ((d.defense % a.strength) + 1);
-        System.out.println("\n" + dname + " blocked " + aname + "\'s attack and only got a scratch!\n(Croud chears)\n");
-       } else {
-        apts = a.strength - d.defense;
-        d.health = d.health - apts;
-        d.defense = d.defense - ((d.defense % apts) + 1);
-        System.out.println("\n" + aname + " strikes " + dname + " for " + apts + " points of damage!\n(Croud gasps!)\n");
-       }
-       if (d.health < 1) {
-        d.health = 0;
-       }
-       if (d.defense < 1) {
-        d.defense = 0;
-       }
-    }
-
-    static void doBattle(Character h, Character e) {
-        Character goesFirst = roll(h, e);
-        System.out.println(goesFirst.cname + " takes initiative!\n");
-        Character defender;
-        if (h.cname == goesFirst.cname) {
-            defender = e;
+    public void attack(Character attacker, Character defender) {
+        Hit hit = defender.receiveHit(attacker);
+        if (hit.blocked) {
+            System.out.printf("%s blocks %s's attack and takes %s!%n", defender, attacker, hit);
+            System.out.println("(Crowd cheers)");
         } else {
-            defender = h;
+            System.out.printf("%s strikes %s for %s!%n", attacker, defender, hit);
+            System.out.println("(Crowd boos)");
         }
-        attack(goesFirst, defender);
-       // System.out.println(defender.cname);
     }
 
-    static int getOption() {
-        Scanner scanObj = new Scanner(System.in);
-        System.out.println("\nEnter option: (1 to battle, 2 to escape!)");
-        int option = scanObj.nextInt();
-        return option;
+    public void doBattle() {
+        boolean go = true;
+        while (go) {
+            Optional<Character> goesFirst = rollInitiative();
+            if (goesFirst.isPresent()) {
+                Character attacker= goesFirst.get();
+                System.out.printf("%n%s takes initiative!%n%n", attacker);
+                Character defender = (hero == attacker) ? enemy : hero;
+                attack(attacker, defender);
+                go = false;
+            } else {
+                clash();
+            }
+        } 
+    }
+
+    public void run() {
+        do {
+            System.out.println();
+            Character.printStats(hero, enemy);
+
+            if (!hero.isAlive()) {
+                System.out.printf("%s defeats %s!%n", enemy, hero);
+                System.out.println("(Crowd boos aggressively)");
+                System.out.println("Someone frome the crowd yells \"YOU SUCK!\"");
+                break;
+            } else if (!enemy.isAlive()) {
+                System.out.printf("%s utterly smites %s!%n", hero, enemy);
+                System.out.println("(Crowd ROARS)");
+                break;
+            }
+        } while (doRound());
+    }
+
+    private boolean doRound() {
+        while (true) {
+            System.out.print("Enter option (1 to battle, 2 to escape)! ");
+
+            switch (scanner.nextLine()) {
+                case "1":
+                    doBattle();
+                    return true;
+                case "2":
+                    System.out.println("YOU COWARD!");
+                    return false;
+                default:
+                    System.err.println("Invalid option");
+            }
+        }
     }
 
     public static void main(String[] args) {
-        Game myGame = new Game();
-        Game.Character hero = myGame.new Character(printWelcome());
-        Game.Character enemy = myGame.new Character("Spock");
-        System.out.println("\nAvast, " + hero.cname + "! Go forth!");
-
-      // printStats(hero);
-      // printStats(enemy);
-       while (hero.health > 0 && enemy.health > 0) {
-            printStats(hero);
-            printStats(enemy);
-            int option = getOption();
-            cls();
-            if (option == 1) {
-                doBattle(hero, enemy);
-            } else if (option == 2) {
-                System.out.println("YOU COWARD!");
-                System.exit(0);
-            } else {
-                System.out.println("Invalid Option");
-            }
-       }
-       printStats(hero);
-       printStats(enemy);
-       if (hero.health < 1) {
-        System.out.println(enemy.cname + " defeated " + hero.cname + "!\n(Cround boos aggressively)\nSomeone from the croud yelled \"YOU SUCK!\"\n");
-       } else {
-        System.out.println(hero.cname + " utterly smote " + enemy.cname + "!\n(Croud ROARS)\n");
-       }
+        new Game().run();
     }
 }
