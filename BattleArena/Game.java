@@ -54,14 +54,31 @@ public class Game {
             return new Hit(blocked, attack_points);
         }
 
-        private void printStats() {
-            System.out.printf("%s's Stats:%n", name);
-            System.out.println("---------------");
-            final String fmt = "%-10s %-2d%n";
-            System.out.printf(fmt, "Health:", health);
-            System.out.printf(fmt, "Defense:", defense);
-            System.out.printf(fmt, "Strength:", strength);
+        public static void printStats(Character... chars) {
+            System.out.print(" ".repeat(9));
+            for (Character col: chars)
+                System.out.printf("%8s ", col);
             System.out.println();
+    
+            System.out.print("-".repeat(8));
+            for (Character col: chars)
+                System.out.print("-".repeat(9));
+            System.out.println();
+    
+            System.out.printf("%8s ", "Health");
+            for (Character col: chars)
+                System.out.printf("%8d ", col.health);
+            System.out.println();
+    
+            System.out.printf("%8s ", "Defense");
+            for (Character col: chars)
+                System.out.printf("%8d ", col.defense);
+            System.out.println();
+    
+            System.out.printf("%8s ", "Strength");
+            for (Character col: chars)
+                System.out.printf("%8d ", col.strength);
+            System.out.printf("%n%n");
         }
 
         @Override
@@ -79,13 +96,13 @@ public class Game {
         System.out.println("Welcome to the arena!");
         System.out.print("Enter your hero's name: ");
         hero = new Character(scanner.nextLine(), rand);
-        System.out.printf("Avast, %s! Go forth!%n", hero);
+        System.out.printf("%nAvast, %s! Go forth!%n", hero);
     }
 
     public void clash() {
-        System.out.printf("%s takes a cheap shot!%n", enemy);
+        System.out.printf("%n%s takes a cheap shot!%n", enemy);
         System.out.println("(Crowd gasps)");
-        System.out.printf("But %s blocks it in the nick of time!%n", hero);
+        System.out.printf("%nBut %s blocks it in the nick of time!%n", hero);
         System.out.println("(Crowd cheers)");
     }
 
@@ -118,7 +135,7 @@ public class Game {
             Optional<Character> goesFirst = rollInitiative();
             if (goesFirst.isPresent()) {
                 Character attacker= goesFirst.get();
-                System.out.printf("%s takes initiative!%n", attacker);
+                System.out.printf("%n%s takes initiative!%n%n", attacker);
                 Character defender = (hero == attacker) ? enemy : hero;
                 attack(attacker, defender);
                 go = false;
@@ -131,8 +148,7 @@ public class Game {
     public void run() {
         do {
             System.out.println();
-            hero.printStats();
-            enemy.printStats();
+            Character.printStats(hero, enemy);
 
             if (!hero.isAlive()) {
                 System.out.printf("%s defeats %s!%n", enemy, hero);
