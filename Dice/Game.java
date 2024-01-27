@@ -31,7 +31,9 @@ public class Game {
         System.out.println("1. Continue to class like aresponsible adult.");
         System.out.println("2. Play like the degenerate you are.");
         System.out.print("\nSelect 1 or 2");
-
+    }
+    
+    public void start() {
         switch (scanner.nextLine()) {
             case "1":
                 System.out.print("Enter your name: ");
@@ -44,17 +46,15 @@ public class Game {
             default:
                 System.err.println("Invalid option");
         }
-       
     }
-
+    
     public void run() {
-
         System.out.println("We got this far");
         System.out.printf("%s%n", you);
         System.out.printf("%s%n", friend);
     }
 
     public static void main(String[] args) {
-        new Game().run();
+        new Game().start();
     }
 }
