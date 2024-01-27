@@ -27,7 +27,6 @@ public class Game {
         System.out.println();
         System.out.println("1. Continue to class like aresponsible adult.");
         System.out.println("2. Play like the degenerate you are.");
-       // System.out.print("\nSelect 1 or 2: ");
     }
     
     public void start() {
@@ -41,7 +40,7 @@ public class Game {
             		case "2":
                 		System.out.print("Enter your name: ");
                 		you = new Player(scanner.nextLine(), rand);
-                		System.out.print("Enter your freind's name: ");
+                		System.out.print("Enter your friend's name: ");
                 		friend = new Player(scanner.nextLine(), rand);
 				stop = false;
 				break;
