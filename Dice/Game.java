@@ -1,3 +1,4 @@
+import java.util.Optional;
 import java.util.Random;
 import java.util.Scanner;
 
@@ -16,6 +17,10 @@ public class Game {
             this.name = name;
         }
 
+        public boolean isBroke() {
+            return cash < 1;
+        }
+
         public static void printStats(Player... plrs) {
             System.out.print(" ".repeat(9));
             for (Player col : plrs) {
@@ -23,10 +28,10 @@ public class Game {
             }
             System.out.println();
 
-            System.out.print("-".repeat(8));
-            for (Player col : plrs) {
-                System.out.printf("-".repeat(9));
-            }
+            System.out.print("-".repeat(26));
+            //for (Player col : plrs) {
+            //    System.out.printf("-".repeat(9));
+            //}
             System.out.println();
 
             System.out.printf("%8s ", "Cash");
@@ -49,6 +54,28 @@ public class Game {
         System.out.println("2. Play like the degenerate you are.");
     }
     
+   
+
+    public Optional<Player> rollForShooter() {
+        /* 
+        int you_roll = diceRoll(rand);
+        int friend_roll = diceRoll(rand);
+        if (you_roll > friend_roll) {
+            return Optional.of(you);
+        } else if (you_roll < friend_roll) {
+            return Optional.of(friend);
+        } else {
+            return Optional.empty();
+        }
+        */
+        return Optional.empty();
+    }
+
+    public void rollDice() {
+        System.out.println("test");
+        //friend.cash = 0;
+    }
+
     public void start() {
 	    boolean stop = true;
 	    while (stop) {
@@ -75,12 +102,32 @@ public class Game {
         do {
             System.out.println();
             Player.printStats(you, friend);
+
+            if (you.isBroke()) {
+                System.out.printf("%s ran out of money and lost, %s gloats as they fill their pockets with your cash.%n", you, friend);
+                break;
+            } else if (friend.isBroke()) {
+                System.out.printf("%s ran out of money and lost, %s quickly gathers their winnings and moves away swiftly.%n", friend, you);
+                break;
+            }
             
-        } while (doRound());
+        } while (startRound());
     }
 
-    public boolean doRound() {
-        System.out.println("First round test");
+    public boolean startRound() {
+        System.out.println("Starting new round...");
+        System.out.println();
+        System.out.println("Roll for shooter? (Y/N)");
+        switch (scanner.nextLine().toUpperCase()) {
+            case "Y":
+                rollDice();
+                return true;
+            case "N":
+                System.out.printf("%n%s took their money and ran...%n", you);
+                return false;
+            default:
+                System.err.println("Invalid option");
+        }
         return false;
     }
 
