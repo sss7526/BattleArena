@@ -16,6 +16,26 @@ public class Game {
             this.name = name;
         }
 
+        public static void printStats(Player... plrs) {
+            System.out.print(" ".repeat(9));
+            for (Player col : plrs) {
+                System.out.printf("%8s ", col);
+            }
+            System.out.println();
+
+            System.out.print("-".repeat(8));
+            for (Player col : plrs) {
+                System.out.printf("-".repeat(9));
+            }
+            System.out.println();
+
+            System.out.printf("%8s ", "Cash");
+            for (Player col : plrs) {
+                System.out.printf("%8d ", col.cash);
+            }
+            System.out.printf("%n%n");
+        }
+
         @Override
         public String toString() {
             return name;
@@ -30,32 +50,38 @@ public class Game {
     }
     
     public void start() {
-	boolean stop = true;
-	while (stop) {
-        	System.out.print("\nSelect 1 or 2: ");
-		switch (scanner.nextLine()) {
-            		case "1":
-                		System.out.println("NERD!!!");
-                		System.exit(0);
-            		case "2":
-                		System.out.print("Enter your name: ");
-                		you = new Player(scanner.nextLine(), rand);
-                		System.out.print("Enter your friend's name: ");
-                		friend = new Player(scanner.nextLine(), rand);
-				stop = false;
-				break;
-            		default:
-                		System.err.println("Invalid option");
-        	}
-	}
-
+	    boolean stop = true;
+	    while (stop) {
+            System.out.print("\nSelect 1 or 2: ");
+		    switch (scanner.nextLine()) {
+                case "1":
+            	    System.out.println("NERD!!!");
+            	    System.exit(0);
+                case "2":
+            	    System.out.print("Enter your name: ");
+            	    you = new Player(scanner.nextLine(), rand);
+                    System.out.print("Enter your friend's name: ");
+                    friend = new Player(scanner.nextLine(), rand);
+				    stop = false;
+			        break;
+                default:
+                    System.err.println("Invalid option");
+            }
+	    }
 	run();
     }
     
     public void run() {
-        System.out.println("We got this far");
-        System.out.printf("%s%n", you);
-        System.out.printf("%s%n", friend);
+        do {
+            System.out.println();
+            Player.printStats(you, friend);
+            
+        } while (doRound());
+    }
+
+    public boolean doRound() {
+        System.out.println("First round test");
+        return false;
     }
 
     public static void main(String[] args) {
