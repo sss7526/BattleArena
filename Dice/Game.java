@@ -7,16 +7,25 @@ public class Game {
     private final Scanner scanner = new Scanner(System.in);
     private Player friend;
     private Player you;
-    private final Dice dice = new Dice(2, rand);
+    private final Dice dice = new Dice(2, 6);
 
     public static class Dice {
         int numDice;
+        int sides;
     
 
-        public Dice(int numDice, Random rand) {
+        public Dice(int numDice, int sides) {
             this.numDice = numDice;
+            this.sides = sides + 1;
         }
 
+        public record diceRoll(int roll, int d1, int d2){
+            @Override
+            public String toString() {
+                return "%d + %d = %d".formatted(d1, d2, roll);
+            }
+        }
+/*/
         public record diceRoll(
             boolean comeOut,
             boolean pass,
@@ -45,6 +54,7 @@ public class Game {
                 }
                 }
             }
+            */
     }
 
 
@@ -61,12 +71,12 @@ public class Game {
             return cash < 1;
         }
 
-        public Dice.diceRoll rollDice(Player shooter, Random rand) {
-            int d1 = rand.nextInt(1,7);
-            int d2 = rand.nextInt(1,7);
+        public Dice.diceRoll rollDice(Random rand, Dice dice) {
+            int d1 = rand.nextInt(1,dice.sides);
+            int d2 = rand.nextInt(1,dice.sides);
             int roll = d1 + d2;
-
-            return new Dice.diceRoll(comeOut, pass, crap, toPoint, point);
+            return new Dice.diceRoll(roll, d1, d2);
+           // return new Dice.diceRoll(comeOut, pass, crap, toPoint, point);
         }
 
         public static void printStats(Player... plrs) {
@@ -104,13 +114,15 @@ public class Game {
     
    
 
-    public Optional<Player> rollForShooter() {
+    public Optional<Player> rollForShooter(Player  you, Player friend, Dice dice) {
          
-        int you_roll = diceRoll(rand);
-        int friend_roll = diceRoll(rand);
-        if (you_roll > friend_roll) {
+        Dice.diceRoll you_roll = you.rollDice(rand, dice);
+        Dice.diceRoll friend_roll = friend.rollDice(rand, dice);
+        System.out.printf("%n%s rolled %s%n", you, you_roll);
+        System.out.printf("%n%s rolled %s%n", friend, friend_roll);
+        if (you_roll.roll > friend_roll.roll) {
             return Optional.of(you);
-        } else if (you_roll < friend_roll) {
+        } else if (you_roll.roll < friend_roll.roll) {
             return Optional.of(friend);
         } else {
             return Optional.empty();
@@ -120,20 +132,49 @@ public class Game {
     }
 
     public void playRound() {
-        boolean go = true;
-        Optional<Player> isShooter = rollForShooter();
-        while (go) {
+        Player shooter = you;
+        Player other = friend;;
+        boolean rollingForShooter = true;
+        boolean crapped = false;
+        boolean passed = false;
+        boolean goesToPoint = false;
+        int point = 0;
+
+        while (rollingForShooter) {
+            Optional<Player> isShooter = rollForShooter(you, friend, dice);
             if (isShooter.isPresent()) {
-                Player shooter = isShooter.get();
+                shooter = isShooter.get();
                 System.out.printf("%n%s is the shooter!%n%n", shooter);
-                Player other = (you == shooter) ? friend : you;
-                rollDice(shooter, other);
-                
+                other = (you == shooter) ? friend : you;
+                rollingForShooter = false;
             } else {
                 System.out.printf("%nTIE! Roll again...");
             }
         }
-        //friend.cash = 0;
+
+        Dice.diceRoll comeOutRoll = shooter.rollDice(rand, dice);
+        if (comeOutRoll.roll == 7 || comeOutRoll.roll == 11) {
+            System.out.printf("%n%s passed this round with %s and won.%n", shooter, comeOutRoll);
+        } else if (comeOutRoll.roll == 2 || comeOutRoll.roll == 3 || comeOutRoll.roll == 12) {
+            System.out.printf("%n%s crapped out with %s and lost to %s.%n", shooter, comeOutRoll, other);
+        } else {
+            System.out.printf("%n%s rolled %s and the game goes to point.%n", shooter, comeOutRoll);
+            goesToPoint = true;
+            point = comeOutRoll.roll;
+        }
+
+        while (goesToPoint){
+            Dice.diceRoll pointRoll = shooter.rollDice(rand, dice);
+            if (pointRoll.roll == 7) {
+                System.out.printf("%n%s crapped out with %s and lost to %s.%n", shooter, pointRoll, other);
+                goesToPoint = false;
+            } else if (pointRoll.roll == point) {
+                System.out.printf("%n%s rolled point %s and won.%n", shooter, pointRoll);
+                goesToPoint = false;
+            } else {
+                System.out.printf("%n%s rolled %s. Place your bets and roll again.%n", shooter, pointRoll);
+            }
+        }
     }
 
     public void start() {
