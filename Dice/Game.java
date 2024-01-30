@@ -131,14 +131,26 @@ public class Game {
         //return Optional.empty();
     }
 
+    public int placeBets(Player shooter) {
+        boolean shooterIsYou = (you == shooter) ? true : false;
+        if shooterIsYou {
+            System.out.print("\nPlace your bet: $");
+            
+            int pool =  scanner.nextInt();
+        }
+        return pool;
+    }
+
     public void playRound() {
         Player shooter = you;
         Player other = friend;;
         boolean rollingForShooter = true;
-        boolean crapped = false;
-        boolean passed = false;
+        //boolean crapped = false;
+        //boolean passed = false;
         boolean goesToPoint = false;
+        boolean shooterIsYou;
         int point = 0;
+        int pool = 0;
 
         while (rollingForShooter) {
             Optional<Player> isShooter = rollForShooter(you, friend, dice);
@@ -151,6 +163,8 @@ public class Game {
                 System.out.printf("%nTIE! Roll again...");
             }
         }
+
+        pool += placeBets(shooter);
 
         Dice.diceRoll comeOutRoll = shooter.rollDice(rand, dice);
         if (comeOutRoll.roll == 7 || comeOutRoll.roll == 11) {
