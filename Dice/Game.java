@@ -1,183 +1,286 @@
+import java.util.Optional;
+import java.util.Random;
 import java.util.Scanner;
-import java.util.*;
-
-class Dice {
-    static int score;
-    
-    static void setScore(int pts) {
-        Dice.score = pts;
-    }
-
-    static int getScore() {
-        return Dice.score;
-    }
-
-    static int roll() {
-        int d1 = Game.getRandom(6, 1);
-        int d2 = Game.getRandom(6, 1);
-        Dice.setScore(d1 + d2);
-        System.out.println(d1 + "+" + d2);
-        System.out.println(Dice.getScore() + "\n");
-        return Dice.getScore();
-    }
-}
-
-class Player {
-    int cash;
-    String name;
-    
-    public Player(String cname) {
-        cash = Game.getRandom(100, 50);
-        name = cname;
-    }
-}
 
 public class Game {
+    private final Random rand = new Random();
+    private final Scanner scanner = new Scanner(System.in);
+    private Player friend;
+    private Player you;
+    private final Dice dice = new Dice(2, 6);
 
-    static void printStats(Player pl, Player pc) {
-        System.out.println(pl.name + "\'s cash: $" + pl.cash);
-        System.out.println(pc.name + "\'s cash: $" + pc.cash);
-    }
+    public static class Dice {
+        int numDice;
+        int sides;
+    
 
-    static Player getShooter(Player pl, Player pc, Dice d) {
-        System.out.println("\nRolling for shooter...\n");
-        System.out.println(pl.name + " rolled:");
-        int plroll = d.roll();
-        System.out.println(pc.name + " rolled:");
-        int pcroll = d.roll();
-        if (plroll > pcroll) {
-            return pl;
-        } else if (pcroll > plroll) {
-            return pc;
-        } else {
-            System.out.println("Tie! Rolling again...\n");
-            return getShooter(pl, pc, d);
+        public Dice(int numDice, int sides) {
+            this.numDice = numDice;
+            this.sides = sides + 1;
         }
-    }
-    static int getRandom(int max, int min) {
-        int num = min + (int)(Math.random() * ((max - min) + 1));
-        return num;
-    }
 
-    static int getIntInput(String prompt) {
-        System.out.println("\n" + prompt);
-        Scanner scanObj = new Scanner(System.in);
-        int response = scanObj.nextInt();
-        return response;
-    }
-
-    static String getStrInput(String prompt) {
-        System.out.println("\n" + prompt);
-        Scanner scanObj = new Scanner(System.in);
-        String response = scanObj.nextLine();
-        return response;
-    }
-
-    static void printWelcome() {
-        System.out.println("You\'re walking to your CS class when suddenly your degenerate friend entices you to a game of dice.\nWhat do you do?");
-        System.out.println("1. Go to class like a responsible adult.");
-        System.out.println("2. Skip class and play like the degenerate you are.");
-        String option = getStrInput("");
-        if (option.contentEquals("1")){
-            System.out.println("NERD!!!");
-            System.exit(0);
-        } else {
-
+        public record diceRoll(int roll, int d1, int d2){
+            @Override
+            public String toString() {
+                return "%d + %d = %d".formatted(d1, d2, roll);
+            }
         }
-    }
-
-    static int plBet(Player shooter, Player other, boolean shooterIsYou) {
-        int bet;
-        if (shooterIsYou == true) {
-            bet = getIntInput("Place your bet:");
-            System.out.println(other.name + " matched your bet.");
-        } else {
-            bet = getRandom(10, 1);
-            System.out.println(shooter.name + " bet $" + bet);
-            if (other.cash >= bet) {
-                String match = "Match it? (Y/N)";
-                boolean option = getStrInput(match).toUpperCase().contentEquals("Y") ? true : false;
-                if (option == false) {
-                    System.out.println("Later loser");
-                    System.exit(0);
+/*/
+        public record diceRoll(
+            boolean comeOut,
+            boolean pass,
+            boolean crap,
+            boolean toPoint,
+            int point
+        ) {
+            @Override
+            public String toString() {
+                if (comeOut == true) {
+                    if (pass == true) {
+                        return "passed and won";
+                    } else if (crap == true) {
+                        return "crapped and lost";
+                    } else {
+                        return "rolled %d for point".formatted(point);
+                    }
                 } else {
+                    if (crap == true) {
+                        return "crapped and lost";
+                    } else if (pass == true) {
+                        return "rolled point and won";
+                    } else {
+                        return "rolled %d.".formatted(point);
+                    }
                 }
-            } else {
-                System.out.println("You don\'t have enough money.");
-                System.exit(0);
+                }
             }
-        }
-        return bet * 2;
+            */
     }
 
-    static void pointRound(Player shooter, Player other, int pool, int point, Dice d, boolean shooterIsYou) {
-        boolean roundOver = false;
-        while (roundOver == false) {
-            System.out.println(shooter.name + " rolled:");
-            int roll = d.roll();
-            if (roll == point) {
-                shooter.cash += pool;
-                System.out.println(shooter.name + " rolled a pass and gained $" + pool);
-                roundOver = true;
-            } else if (roll == 7) {
-                other.cash += pool;
-                System.out.println(shooter.name + " rolled a 7 and " + other.name + "gained $" + pool);
-                roundOver = true;
-            } else {
-                System.out.println(shooter.name + " rolled a " + roll);
-                pool += plBet(shooter, other, shooterIsYou);
+
+    public static class Player {
+        private int cash;
+        public final String name;
+
+        public Player(String name, Random rand) {
+            cash = rand.nextInt(50, 101);
+            this.name = name;
+        }
+
+        public boolean isBroke() {
+            return cash < 1;
+        }
+
+        public Dice.diceRoll rollDice(Random rand, Dice dice) {
+            int d1 = rand.nextInt(1,dice.sides);
+            int d2 = rand.nextInt(1,dice.sides);
+            int roll = d1 + d2;
+            return new Dice.diceRoll(roll, d1, d2);
+           // return new Dice.diceRoll(comeOut, pass, crap, toPoint, point);
+        }
+
+        public static void printStats(Player... plrs) {
+            System.out.print(" ".repeat(9));
+            for (Player col : plrs) {
+                System.out.printf("%8s ", col);
             }
+            System.out.println();
+
+            System.out.print("-".repeat(26));
+            //for (Player col : plrs) {
+            //    System.out.printf("-".repeat(9));
+            //}
+            System.out.println();
+
+            System.out.printf("%8s ", "Cash");
+            for (Player col : plrs) {
+                System.out.printf("%8d ", col.cash);
+            }
+            System.out.printf("%n%n");
+        }
+
+        @Override
+        public String toString() {
+            return name;
         }
     }
 
-    static void startRound(Player pl, Player pc, Dice d) {
+    public Game() {
+        System.out.println("While walking to your CS class, your degenerate friend entices you to a game of dice. What do you do?");
+        System.out.println();
+        System.out.println("1. Continue to class like aresponsible adult.");
+        System.out.println("2. Play like the degenerate you are.");
+    }
+    
+   
+
+    public Optional<Player> rollForShooter(Player  you, Player friend, Dice dice) {
+         
+        Dice.diceRoll you_roll = you.rollDice(rand, dice);
+        Dice.diceRoll friend_roll = friend.rollDice(rand, dice);
+        System.out.printf("%n%s rolled %s%n", you, you_roll);
+        System.out.printf("%n%s rolled %s%n", friend, friend_roll);
+        if (you_roll.roll > friend_roll.roll) {
+            return Optional.of(you);
+        } else if (you_roll.roll < friend_roll.roll) {
+            return Optional.of(friend);
+        } else {
+            return Optional.empty();
+        }
+        
+        //return Optional.empty();
+    }
+
+    public int placeBets(Player shooter) {
+        boolean shooterIsYou = (you == shooter) ? true : false;
+        int bet = 0;
+        while (shooterIsYou) {
+            System.out.print("\nPlace your bet: $");
+            bet = Integer.valueOf(scanner.nextLine());
+            if (bet > you.cash) {
+                System.out.println("You don't have that much dough.");
+            } else if (bet > friend.cash) {
+                System.out.printf("%n%s, doesn't have that much dough.", friend);
+            } else {
+                bet += bet;
+                break;
+            }
+        }
+
+        if (!shooterIsYou) {
+            bet = rand.nextInt(1, 11);
+            System.out.printf("%n%s bet $%d, will you match it? (Y/N)%n", friend, bet);
+            switch (scanner.nextLine().toUpperCase()) {
+                case "Y":
+                    bet += bet;
+                    break;
+                case "N":
+                    System.out.printf("%nFine, %s lowered the bet to $%d. You'd better win this or you'll be out of lunch money.%n", friend, you.cash);
+                    bet = you.cash * 2;
+                    break;
+                default:
+                    System.err.println("Invalid option");
+            }
+        }
+        return bet;
+    }
+
+    public void playRound() {
+        Player shooter = you;
+        Player other = friend;
+        boolean rollingForShooter = true;
+        //boolean crapped = false;
+        //boolean passed = false;
+        boolean goesToPoint = false;
+        //boolean shooterIsYou;
+        int point = 0;
         int pool = 0;
-        int bet;
-        boolean shooterIsYou;
-        Player shooter = getShooter(pl, pc, d);
-        System.out.println(shooter.name + " is shooter");
-        Player other;
-        boolean roundOver = false;
 
-        if (pl.name.contentEquals(shooter.name)) {
-            other = pc;
-            shooterIsYou = true;
-        } else {
-            other = pl;
-            shooterIsYou = false;
-        }
-
-        pool += plBet(shooter, other, shooterIsYou);
-        System.out.println("Stakes: " + pool);
-
-        while (roundOver == false) {
-            System.out.println(shooter.name + " rolled:");
-            int roll = d.roll();
-            if (roll > 3 && roll < 12) {
-                if (roll == 7 || roll == 11) {
-                    shooter.cash += pool;
-                    System.out.println(shooter.name + " rolled a pass and gained $" + pool);
-                    roundOver = true;
-                } else {
-                     System.out.println(shooter.name + " rolled point");
-                     pointRound(shooter, other, pool, roll, d, shooterIsYou);
-                
-                }
+        while (rollingForShooter) {
+            Optional<Player> isShooter = rollForShooter(you, friend, dice);
+            if (isShooter.isPresent()) {
+                shooter = isShooter.get();
+                System.out.printf("%n%s is the shooter!%n%n", shooter);
+                other = (you == shooter) ? friend : you;
+                rollingForShooter = false;
             } else {
-                other.cash += pool;
-                System.out.println(shooter.name +  " crapped out and " + other.name + " won $" + pool);
-                roundOver = true;
+                System.out.printf("%nTIE! Roll again...");
             }
         }
+
+        pool += placeBets(shooter);
+
+        Dice.diceRoll comeOutRoll = shooter.rollDice(rand, dice);
+        if (comeOutRoll.roll == 7 || comeOutRoll.roll == 11) {
+            System.out.printf("%n%s passed this round with %s and won.%n", shooter, comeOutRoll);
+            shooter.cash += pool / 2;
+            other.cash -= pool / 2;
+        } else if (comeOutRoll.roll == 2 || comeOutRoll.roll == 3 || comeOutRoll.roll == 12) {
+            System.out.printf("%n%s crapped out with %s and lost to %s.%n", shooter, comeOutRoll, other);
+            shooter.cash -= pool / 2;
+            other.cash += pool / 2;
+        } else {
+            System.out.printf("%n%s rolled %s and the game goes to point.%n", shooter, comeOutRoll);
+            goesToPoint = true;
+            point = comeOutRoll.roll;
+        }
+
+        while (goesToPoint){
+            System.out.printf("%nPoint: %d%n", point);
+            pool += placeBets(shooter);
+            Dice.diceRoll pointRoll = shooter.rollDice(rand, dice);
+            if (pointRoll.roll == 7) {
+                System.out.printf("%n%s crapped out with %s and lost to %s.%n", shooter, pointRoll, other);
+                shooter.cash -= pool / 2;
+                other.cash += pool / 2;
+                goesToPoint = false;
+            } else if (pointRoll.roll == point) {
+                System.out.printf("%n%s rolled point %s and won.%n", shooter, pointRoll);
+                shooter.cash += pool / 2;
+                other.cash -= pool / 2;
+                goesToPoint = false;
+            } else {
+                System.out.printf("%n%s rolled %s. Place your bets and roll again.%n", shooter, pointRoll);
+            }
+        }
+    }
+
+    public void start() {
+	    boolean stop = true;
+	    while (stop) {
+            System.out.print("\nSelect 1 or 2: ");
+		    switch (scanner.nextLine()) {
+                case "1":
+            	    System.out.println("NERD!!!");
+            	    System.exit(0);
+                case "2":
+            	    System.out.print("Enter your name: ");
+            	    you = new Player(scanner.nextLine(), rand);
+                    System.out.print("Enter your friend's name: ");
+                    friend = new Player(scanner.nextLine(), rand);
+				    stop = false;
+			        break;
+                default:
+                    System.err.println("Invalid option");
+            }
+	    }
+	run();
+    }
+    
+    public void run() {
+        do {
+            System.out.println();
+            Player.printStats(you, friend);
+
+            if (you.isBroke()) {
+                System.out.printf("%s ran out of money and lost, %s gloats as they fill their pockets with your cash.%n", you, friend);
+                break;
+            } else if (friend.isBroke()) {
+                System.out.printf("%s ran out of money and lost, %s quickly gathers their winnings and moves away swiftly.%n", friend, you);
+                break;
+            }
+            
+        } while (startRound());
+    }
+
+    public boolean startRound() {
+        System.out.println("Starting new round...");
+        System.out.println();
+        System.out.println("Roll for shooter? (Y/N)");
+        switch (scanner.nextLine().toUpperCase()) {
+            case "Y":
+                playRound();
+                return true;
+            case "N":
+                System.out.printf("%n%s took their money and ran...%n", you);
+                return false;
+            default:
+                System.err.println("Invalid option");
+        }
+        return false;
     }
 
     public static void main(String[] args) {
-        printWelcome();
-        Dice dice = new Dice();
-        Player player = new Player(getStrInput("Enter player\'s name:"));
-        Player pc = new Player(getStrInput("Enter friend\'s name:"));
-        printStats(player, pc);
-        startRound(player, pc, dice);
-
+        new Game().start();
     }
 }

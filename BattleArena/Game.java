@@ -60,10 +60,10 @@ public class Game {
                 System.out.printf("%8s ", col);
             System.out.println();
     
-            System.out.print("-".repeat(8));
-            for (Character col: chars)
-                System.out.print("-".repeat(9));
-            System.out.println();
+            System.out.print("-".repeat(26));
+            //for (Character col: chars)
+            //    System.out.print("-".repeat(9));
+            //System.out.println();
     
             System.out.printf("%8s ", "Health");
             for (Character col: chars)
