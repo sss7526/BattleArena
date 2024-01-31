@@ -133,12 +133,36 @@ public class Game {
 
     public int placeBets(Player shooter) {
         boolean shooterIsYou = (you == shooter) ? true : false;
-        if shooterIsYou {
+        int bet = 0;
+        while (shooterIsYou) {
             System.out.print("\nPlace your bet: $");
-            
-            int pool =  scanner.nextInt();
+            bet = Integer.valueOf(scanner.nextLine());
+            if (bet > you.cash) {
+                System.out.println("You don't have that much dough.");
+            } else if (bet > friend.cash) {
+                System.out.printf("%n%s, doesn't have that much dough.", friend);
+            } else {
+                bet += bet;
+                break;
+            }
         }
-        return pool;
+
+        if (!shooterIsYou) {
+            bet = rand.nextInt(1, 11);
+            System.out.printf("%n%s bet $%d, will you match it? (Y/N)%n", friend, bet);
+            switch (scanner.nextLine().toUpperCase()) {
+                case "Y":
+                    bet += bet;
+                    break;
+                case "N":
+                    System.out.printf("%nFine, %s lowered the bet to $%d. You'd better win this or you'll be out of lunch money.%n", friend, you.cash);
+                    bet = you.cash * 2;
+                    break;
+                default:
+                    System.err.println("Invalid option");
+            }
+        }
+        return bet;
     }
 
     public void playRound() {
@@ -148,7 +172,7 @@ public class Game {
         //boolean crapped = false;
         //boolean passed = false;
         boolean goesToPoint = false;
-        boolean shooterIsYou;
+        //boolean shooterIsYou;
         int point = 0;
         int pool = 0;
 
