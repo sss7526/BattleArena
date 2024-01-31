@@ -167,7 +167,7 @@ public class Game {
 
     public void playRound() {
         Player shooter = you;
-        Player other = friend;;
+        Player other = friend;
         boolean rollingForShooter = true;
         //boolean crapped = false;
         //boolean passed = false;
@@ -193,8 +193,12 @@ public class Game {
         Dice.diceRoll comeOutRoll = shooter.rollDice(rand, dice);
         if (comeOutRoll.roll == 7 || comeOutRoll.roll == 11) {
             System.out.printf("%n%s passed this round with %s and won.%n", shooter, comeOutRoll);
+            shooter.cash += pool / 2;
+            other.cash -= pool / 2;
         } else if (comeOutRoll.roll == 2 || comeOutRoll.roll == 3 || comeOutRoll.roll == 12) {
             System.out.printf("%n%s crapped out with %s and lost to %s.%n", shooter, comeOutRoll, other);
+            shooter.cash -= pool / 2;
+            other.cash += pool / 2;
         } else {
             System.out.printf("%n%s rolled %s and the game goes to point.%n", shooter, comeOutRoll);
             goesToPoint = true;
@@ -202,12 +206,18 @@ public class Game {
         }
 
         while (goesToPoint){
+            System.out.printf("%nPoint: %d%n", point);
+            pool += placeBets(shooter);
             Dice.diceRoll pointRoll = shooter.rollDice(rand, dice);
             if (pointRoll.roll == 7) {
                 System.out.printf("%n%s crapped out with %s and lost to %s.%n", shooter, pointRoll, other);
+                shooter.cash -= pool / 2;
+                other.cash += pool / 2;
                 goesToPoint = false;
             } else if (pointRoll.roll == point) {
                 System.out.printf("%n%s rolled point %s and won.%n", shooter, pointRoll);
+                shooter.cash += pool / 2;
+                other.cash -= pool / 2;
                 goesToPoint = false;
             } else {
                 System.out.printf("%n%s rolled %s. Place your bets and roll again.%n", shooter, pointRoll);
